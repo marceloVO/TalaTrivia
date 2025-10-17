@@ -12,7 +12,7 @@ Base URL: http://localhost:8080
 ## primer paso
 - se debe crear el contenedor de docker con el siguiente comando docker-compose build --no-cache
 - levantar los servicios -> docker-compose up -d
-- una vez levantado el servicio hay que ejecutar el comando docker-compose exec php composer install --no-dev para poder instalar las dependencias
+- una vez levantado el servicio hay que ejecutar el comando docker-compose exec php sh -c "cd skeleton && composer install" para poder instalar las dependencias
 - hay que ejecutar el comando docker-compose exec php bin/console doctrine:database:create --if-not-exists para crear la base de datos en aso de que no exista
 - luego del comando ejecutar el siguiente docker-compose exec php bin/console doctrine:migrations:migrate --no-interaction se ocupara para aplicar todas las migraciones para luego crear las tablas
 ## una vez ejecutado los comandos se pueden crear los usuarios
