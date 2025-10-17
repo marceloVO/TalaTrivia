@@ -1,0 +1,14 @@
+{
+  "name": "talatrivia",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:css": "tailwindcss -i ./assets/styles/app.css -o ./skeleton/public/build/app.css --watch",
+    "build:css": "tailwindcss -i ./assets/styles/app.css -o ./skeleton/public/build/app.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.5.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}

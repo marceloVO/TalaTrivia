@@ -1,0 +1,184 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin - Preguntas - TalaTrivia{% endblock %}
+
+{% block content %}
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h2>Preguntas</h2>
+		<button class="btn btn-success" id="btnAbrirpreguntas" type="button" data-bs-toggle="modal" data-bs-target="#preguntas">Crear Preguntas</button>
+	</div>
+	{% if questions is empty %}
+		<div class="alert alert-info">No hay Preguntas aún.</div>
+	{% else %}
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Pregunta</th>
+					<th>Categoria</th>
+					<th>Dificultad</th>
+					<th>Puntaje</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for c in questions %}
+					<tr>
+						<td>{{ c.id }}</td>
+						<td>{{ c.text }}</td>
+						<td>{{c.category.name}}</td>
+						<td>
+							{% if c.difficulty == 1 %}
+								Facil
+							{% elseif c.difficulty == 2 %}
+								Normal
+							{% elseif c.difficulty == 3 %}
+								Dificil
+							{% endif %}
+						</td>
+						<td>{{c.score}}</td>
+						<td>
+							<button type="button" class="btn btn-sm btn-outline-secondary btn-edit" data-id="{{c.id}}"   data-text="{{c.text}}" data-category_id="{{c.category.id}}" data-difficulty="{{c.difficulty}}" data-score="{{c.score}}"  data-bs-toggle="modal" data-bs-target="#preguntasEdit">Editar</button>
+							{#<button onclick="eliminarpreguntas('{{ path('questions_delete', {id: c.id}) }}')" class="btn btn-danger btn-sm">Eliminar</button>#}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+	<form method="POST" action="{{path('questions_create')}}">
+		<div class="modal fade" id="preguntas" tabindex="-1" aria-labelledby="preguntasLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="preguntasLabel">Crear Preguntas</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body">
+						<div class="mb-3">
+							<label for="pregunta" class="form-label">Pregunta</label>
+							<input type="text" class="form-control" id="pregunta" name="text" required>
+                        </div>
+						<div class="mb-3">
+							<label for="difficulty" class="form-label">Dificultad</label>
+							<input type="number" class="form-control" placeholder="1-(facil), 2-(normal), 3-(dificil)" id="difficulty" name="difficulty" max="3" required>
+                        </div>
+						<div class="mb-3">
+							<label for="score" class="form-label">Puntaje</label>
+							<input type="number" class="form-control" id="score" name="score" required>
+						</div>
+						<div class="mb-3">
+							<label for="category_id" class="form-label">Categorias</label>
+							<select class="form-control" name="category_id" id="category_id" required>
+							{% for categories in categories %}
+								<option  value="{{categories.id}}">{{categories.name}}</option>
+							{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Crear Pregunta</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+    <form method="POST" action="{{path('questions_edit')}}">
+		<div class="modal fade" id="preguntasEdit" tabindex="-1" aria-labelledby="preguntasEditLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header" style="align-self: center;">
+						<h5 class="modal-title" id="preguntasEditLabel">Editar Preguntas</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body" style="text-align-last: center;">
+						<div class="mb-3">
+							<label for="preguntaE" class="form-label">Pregunta</label>
+							<input type="text" class="form-control" id="preguntaE" name="textE" required>
+							<input type="hidden" id="idQuestionsE" name="idQuestionsE" value="">
+                        </div>
+						<div class="mb-3">
+							<label for="difficultyE" class="form-label">Dificultad</label>
+							<input type="number" class="form-control" placeholder="1-(facil), 2-(normal), 3-(dificil)" id="difficultyE" name="difficultyE" max="3" required>
+                        </div>
+						<div class="mb-3">
+							<label for="scoreE" class="form-label">Puntaje</label>
+							<input type="number" class="form-control" id="scoreE" name="scoreE" required>
+						</div>
+						<div class="mb-3">
+							<label for="category_idE" class="form-label">Categorias</label>
+							<select class="form-control" name="category_idE" id="category_idE" required> 
+								{% for category_item in categories %}
+									<option value="{{ category_item.id }}">{{ category_item.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer" style="align-self: center;">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Editar Pregunta</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+{% endblock %}
+
+{% block javascript %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+		var editModal = document.getElementById('preguntasEdit');
+		if (editModal) {
+			editModal.addEventListener('show.bs.modal', function (event) {
+				var button = event.relatedTarget;
+				if (!button) return;
+				var id = button.getAttribute('data-id');
+				var text = button.getAttribute('data-text');
+				var category_id = button.getAttribute('data-category_id');
+				var difficulty = button.getAttribute('data-difficulty');
+				var score = button.getAttribute('data-score');
+				
+				var inputText = document.getElementById('preguntaE');
+				
+				var selectCategory = document.getElementById('category_idE'); 
+				
+				var inputDifficulty = document.getElementById('difficultyE');
+				var inputScore = document.getElementById('scoreE');
+				var inputId = document.getElementById('idQuestionsE');
+				
+				if (inputText) inputText.value = text || '';
+				
+				if (selectCategory) selectCategory.value = category_id || ''; 
+				
+				if (inputDifficulty) inputDifficulty.value = difficulty || '';
+				if (inputScore) inputScore.value = score || '';
+				if (inputId) inputId.value = id || '';
+			});
+		}
+	});
+
+        function eliminarpreguntas(url) {
+            if (!confirm('¿Estás seguro de eliminar esta categoría?')) {
+                return;
+            }
+            fetch(url, { method: 'DELETE' })
+                .then(response => {
+                    if (response.status === 409) {
+                        return response.json().then(data => {
+                            alert('Error: ' + (data.error || 'Problema de relación de datos.'));
+                        });
+                    } else if (response.ok) {
+                        alert('Categoría eliminada correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error inesperado al eliminar la categoría.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión con el servidor (fetch failed).');
+                });
+        }
+	</script>
+{% endblock %}

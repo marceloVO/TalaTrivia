@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TalaTrivia - Home{% endblock %}
+
+{% block body %}
+<h2 class="text-2xl font-semibold mb-4">Trivias disponibles</h2>
+<div class="row">
+  {% for t in trivias %}
+      <div class="col-lg-4 ">
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="font-bold text-lg">{{ t.getName() }}</h3>
+          <p class="text-sm text-gray-600">{{ t.getQuestions()|length }} preguntas</p>
+          <div class="mt-4">
+            {% if app.user and app.user.getRoles()[0] in ['ROLE_PLAYER','ROLE_ADMIN']%}
+              <a href="{{ path('web_play_start', {id: t.getId()}) }}" class="bg-indigo-600 btn btn-success px-3 py-2 rounded hover:bg-indigo-700">Jugar</a>
+            {% endif %}
+            
+            {% set triviaId = t.getId() %}             
+            {% if rankings[triviaId] is defined and rankings[triviaId]|length > 0 %}
+                <div class="mt-6 pt-4 border-t border-gray-200 w-full">
+                    <h4 class="text-sm font-bold text-indigo-600 mb-2 text-center">🏆 Top 5 Puntajes</h4>
+                    <ol class="list-none space-y-1 text-sm">
+                        {% for rank in rankings[triviaId] %}
+                            <li class="flex justify-between items-center py-1 px-2 rounded-md bg-gray-50">
+                                <span class="font-medium text-gray-700 truncate mr-2">
+                                    {{ rank.username }} 
+                                </span>
+                                <span class="font-bold text-green-600">
+                                    {{ rank.score }} pts
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            {% else %}
+                <div class="mt-6 pt-4 border-t border-gray-200 w-full text-center">
+                    <p class="text-xs text-gray-400">Sé el primero en jugar y aparecer en el ranking.</p>
+                </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+  {% else %}
+      <p>No hay trivias aún.</p>
+  {% endfor %}
+</div>
+{% endblock %}

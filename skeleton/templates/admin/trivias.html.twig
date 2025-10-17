@@ -1,0 +1,189 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin - Trivias - TalaTrivia{% endblock %}
+
+{% block content %}
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h2>Trivias</h2>
+		<button class="btn btn-success" id="btnAbrirTrivia" type="button" data-bs-toggle="modal" data-bs-target="#Trivia">Crear Trivia</button>
+	</div>
+
+	{% if trivias is empty %}
+		<div class="alert alert-info">No hay Trivias aún.</div>
+	{% else %}
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Nombre</th>
+					<th>Preguntas asociadas</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for c in trivias %}
+					<tr>
+						<td>{{ c.id }}</td>
+						<td>{{ c.name }}</td>
+						<td>{{ c.questions|length }}</td>
+						<td>
+							<button type="button" 
+                                    class="btn btn-sm btn-outline-secondary btn-edit" 
+                                    data-id="{{ c.id }}" 
+                                    data-name="{{ c.name }}"
+                                    {# Convertimos la colección de preguntas de la Trivia 'c' a un JSON de IDs #}
+                                    data-questions="{{ c.questions|map(q => q.id)|json_encode }}" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#TriviaEdit">
+                                    Editar
+                            </button>
+							
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+	<form method="POST" action="{{ path('trivia_create') }}">
+		<div class="modal fade" id="Trivia" tabindex="-1" aria-labelledby="TriviaLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="TriviaLabel">Crear Trivia</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body">
+						<div class="mb-3">
+							<label for="nombreTriviaCreate" class="form-label">Nombre</label>
+							<input type="text" class="form-control" id="nombreTriviaCreate" name="name" required>
+                        </div>
+                        <div class="mb-3">
+							<label for="questions_id" class="form-label">Seleccionar Preguntas (Mantén Ctrl/Cmd para selección múltiple)</label>
+							<select class="form-control" name="questions_ids[]" id="questions_id" required multiple style="height: 300px;"> 
+								{% for questions_item in questions %}
+									<option value="{{ questions_item.id }}"> [{{ questions_item.category.name }}] - {{ questions_item.text }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Crear Trivia</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+    <form method="POST" id="triviaEditForm">
+        <div class="modal fade" id="TriviaEdit" tabindex="-1" aria-labelledby="TriviaEditLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="TriviaEditLabel">Editar Trivia</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="idTriviaEdit">                         
+                        <div class="mb-3">
+                            <label for="nombreTriviaEdit" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreTriviaEdit" name="name" required> 
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="questions_edit" class="form-label">Seleccionar Preguntas</label>
+                            <select class="form-control" name="questions_ids[]" id="questions_edit" required multiple style="height: 300px;"> 
+                                {% for questions_item in questions %} 
+                                    <option value="{{ questions_item.id }}">
+                                        [{{ questions_item.category.name }}] - {{ questions_item.text }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Guardar Cambios</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block javascript %}
+	<script>
+        $(document).ready(function() {
+            $('#questions_ids').select2({
+                placeholder: "Busca y selecciona las preguntas para esta trivia...",
+                allowClear: true // Permite deseleccionar todo
+            });
+        });
+		document.addEventListener('DOMContentLoaded', function () {
+            var editModal = document.getElementById('TriviaEdit');
+            var form = document.getElementById('triviaEditForm');
+            var questionsSelect = document.getElementById('questions_edit'); // ID del select
+
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    if (!button) return;
+
+                    var id = button.getAttribute('data-id');
+                    var name = button.getAttribute('data-name');
+                    var questionsJson = button.getAttribute('data-questions');
+                    
+                    // 1. Cargar el ID y Nombre
+                    var inputName = document.getElementById('nombreTriviaEdit');
+                    var inputId = document.getElementById('idTriviaEdit');
+                    
+                    if (inputName) inputName.value = name || '';
+                    if (inputId) inputId.value = id || '';
+                    if (form) {
+                        
+                        form.action = '/admin/trivia_edit/' + id; 
+                    }
+
+                    if (questionsSelect && questionsJson) {
+                        for (var i = 0; i < questionsSelect.options.length; i++) {
+                            questionsSelect.options[i].selected = false;
+                        }
+                        
+                        var selectedQuestionIds = JSON.parse(questionsJson);
+                        
+                        for (var i = 0; i < questionsSelect.options.length; i++) {
+                            var option = questionsSelect.options[i];                            
+                            if (selectedQuestionIds.includes(parseInt(option.value))) {
+                                option.selected = true;
+                            }
+                        }
+                        $(questionsSelect).trigger('change');
+                    }
+                });
+            }
+        });
+
+        function eliminarTrivia(url) {
+            if (!confirm('¿Estás seguro de eliminar esta categoría?')) {
+                return;
+            }
+            fetch(url, { method: 'DELETE' })
+                .then(response => {
+                    if (response.status === 409) {
+                        return response.json().then(data => {
+                            alert('Error: ' + (data.error || 'Problema de relación de datos.'));
+                        });
+                    } else if (response.ok) {
+                        alert('Categoría eliminada correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error inesperado al eliminar la categoría.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión con el servidor (fetch failed).');
+                });
+        }
+
+	</script>
+{% endblock %}

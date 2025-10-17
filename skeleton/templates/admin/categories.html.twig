@@ -1,0 +1,126 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin - Categorías - TalaTrivia{% endblock %}
+
+{% block content %}
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h2>Categorías</h2>
+		<button class="btn btn-success" id="btnAbrirCategoria" type="button" data-bs-toggle="modal" data-bs-target="#categoria">Crear categoría</button>
+	</div>
+
+	{% if categories is empty %}
+		<div class="alert alert-info">No hay categorías aún.</div>
+	{% else %}
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Nombre</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for c in categories %}
+					<tr>
+						<td>{{ c.id }}</td>
+						<td>{{ c.name }}</td>
+						<td>
+							<button type="button" class="btn btn-sm btn-outline-secondary btn-edit" data-id="{{ c.id }}" data-name="{{ c.name }}" data-bs-toggle="modal" data-bs-target="#categoriaEdit">Editar</button>
+							<button onclick="eliminarCategoria('{{ path('categories_delete', {id: c.id}) }}')" class="btn btn-danger btn-sm">Eliminar</button>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+	<form method="POST" action="{{ path('categories_create') }}">
+		<div class="modal fade" id="categoria" tabindex="-1" aria-labelledby="categoriaLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="categoriaLabel">Crear categoría</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body">
+						<div class="mb-3">
+							<label for="nombreCategoriaCreate" class="form-label">Nombre</label>
+							<input type="text" class="form-control" id="nombreCategoriaCreate" name="name" required>
+                        </div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Crear categoría</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+    <form method="POST" action="{{ path('categories_edit') }}">
+		<div class="modal fade" id="categoriaEdit" tabindex="-1" aria-labelledby="categoriaEditLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="categoriaEditLabel">Editar categoría</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body">
+						<div class="mb-3">
+							<label for="nombreCategoriaEdit" class="form-label">Nombre</label>
+							<input type="text" class="form-control" id="nombreCategoriaEdit" name="nameEdit" required>
+							<input type="hidden" id="idCategoriaEdit" name="idCategoria" value="">
+                        </div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Editar categoría</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+{% endblock %}
+
+{% block javascript %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			var editModal = document.getElementById('categoriaEdit');
+			if (editModal) {
+				editModal.addEventListener('show.bs.modal', function (event) {
+					var button = event.relatedTarget;
+					if (!button) return;
+					var id = button.getAttribute('data-id');
+					var name = button.getAttribute('data-name');
+					console.log('modal show', id, name);
+					var inputName = document.getElementById('nombreCategoriaEdit');
+					var inputId = document.getElementById('idCategoriaEdit');
+					if (inputName) inputName.value = name || '';
+					if (inputId) inputId.value = id || '';
+				});
+			}
+		});
+
+        function eliminarCategoria(url) {
+            if (!confirm('¿Estás seguro de eliminar esta categoría?')) {
+                return;
+            }
+            fetch(url, { method: 'DELETE' })
+                .then(response => {
+                    if (response.status === 409) {
+                        return response.json().then(data => {
+                            alert('Error: ' + (data.error || 'Problema de relación de datos.'));
+                        });
+                    } else if (response.ok) {
+                        alert('Categoría eliminada correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error inesperado al eliminar la categoría.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión con el servidor (fetch failed).');
+                });
+        }
+
+	</script>
+{% endblock %}

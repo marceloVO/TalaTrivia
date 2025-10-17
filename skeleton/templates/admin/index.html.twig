@@ -1,0 +1,20 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin - TalaTrivia{% endblock %}
+
+{% block content %}
+  <h1>Panel de Administración</h1>
+  <p class="text-muted mb-4">Desde aquí puedes gestionar las diferentes secciones del sistema.</p>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title text-indigo-600 mb-3">📂 Funcionalidades</h5>
+      <ul class="list-unstyled ms-3">
+        <li>Gestión completa de categorías</li>
+        <li>Creación y edición de Trivias</li>
+        <li>Creación y edición de preguntas</li>
+        <li>Configuración de respuestas válidas</li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}TalaTrivia{% endblock %}</title>
+  {% block stylesheets %}{% endblock %}
+  <link rel="stylesheet" href="/build/app.css">
+  {#agregamos link de booststrap#}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  
+  {#css#}
+  <style>
+    /* --- Estilos personalizados --- */
+    .navbar {
+      background-color: #f8f9fa; /* Color claro */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1030;
+    }
+
+    .navbar-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #212529;
+    }
+
+    .navbar .btn-login {
+      font-weight: 500;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+    }
+
+    .navbar .btn-login:hover {
+      background-color: #0069d9;
+    }
+    /* Space so fixed navbar doesn't overlap content */
+    .main-content {
+      padding-top: 80px; /* adjust if navbar height changes */
+    }
+  </style>
+  {#js#}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-900" style="background-color: rgb(27 172 213 / 16%);">
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid">
+      <!-- Left: Login/Register or Logout -->
+      <div class="d-flex align-items-center">
+        {% if app.user and app.user.getRoles()[0] != 'ROLE_ADMIN'%}
+          <span class="me-3">Hola, {{ app.user.getName() }}</span>
+          <form method="post" action="{{ path('app_logout') }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Logout</button>
+          </form>
+        {% elseif session.get('user.name') %}
+          <span class="me-3">Hola, {{ session.get('user.name') }}</span>
+          <form method="post" action="{{ path('app_logout') }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Logout</button>
+          </form>
+        {% elseif app.user.getRoles()[0] =='ROLE_ADMIN' %}
+            <span class="me-3">Hola, {{ app.user.getName() }}</span>
+        {% else %}
+          <a href="{{ path('app_login') }}" class="btn btn-login ms-3">Login</a>
+          <a href="{{ path('app_register') }}" class="btn btn-link ms-2">Register</a>
+        {% endif %}
+      </div>
+
+      <!-- Título CENTRADO -->
+      <span class="navbar-title">Tala Trivia</span>
+
+    </div>
+  </nav>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8 text-center main-content">
+    <div class="container" >
+      {% block body %}
+      {% endblock %}
+    </div>
+  </main>
+  {% block javascript %}{% endblock %}
+</body>
+</html>

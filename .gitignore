@@ -1,0 +1,14 @@
+# .gitignore (en la raíz)
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+
+# Sin slash inicial para ignorar en cualquier subdirectorio
+var/
+vendor/
+
+###< symfony/framework-bundle ###

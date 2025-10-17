@@ -1,0 +1,186 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin - Respuestas - TalaTrivia{% endblock %}
+
+{% block content %}
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h2>Respuestas</h2>
+		<button class="btn btn-success" id="btnAbrirRespuesta" type="button" data-bs-toggle="modal" data-bs-target="#respuesta">Crear Respuesta</button>
+	</div>
+
+	{% if answers is empty %}
+		<div class="alert alert-info">No hay Respuestas aún.</div>
+	{% else %}
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Pregunta</th>
+					<th>Nombre</th>
+					<th>¿Es Correcta?</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for c in answers %}
+					<tr>
+						<td>{{ c.id }}</td>
+						<td>{{ c.question.text }}</td>
+						<td>{{ c.text }}</td>
+						<td>
+							{% if c.is_correct == 1  %}
+								Si
+							{% else %}
+								No
+							{% endif %}
+						
+						</td>
+						<td>
+							<button type="button" style="width: 70px;"
+									class="btn btn-sm btn-outline-secondary btn-edit" 
+									data-id="{{ c.id }}" 
+									data-text="{{ c.text }}" 
+									data-is-correct="{{ c.is_correct ? 1 : 0 }}" 
+									data-question-id="{{ c.question.id }}" 
+									data-bs-toggle="modal" 
+									data-bs-target="#respuestaEdit">
+									Editar
+							</button>
+							<button onclick="eliminarRespuesta('{{ path('answer_delete', {id: c.id}) }}')" class="btn btn-danger btn-sm" style="width: 70px;">Eliminar</button>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+	<form method="POST" action="{{ path('answer_create') }}">
+		<div class="modal fade" id="respuesta" tabindex="-1" aria-labelledby="respuestaLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="respuestaLabel">Crear Respuesta</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body" style="text-align-last: center;">
+						<div class="mb-3">
+							<label for="nombreRespuesta" class="form-label">Nombre de la respuesta</label>
+							<input type="text" class="form-control" id="nombreRespuesta" name="nombreRespuesta" required>
+                        </div>
+						<div class="mb-3">
+							<label for="isCorrect" class="form-label">¿Es Correcta?</label>
+							<input type="number" class="form-control" id="isCorrect" placeholder="0- No, 1- Si" name="isCorrect" max="1" required>
+                        </div>
+						<div class="mb-3">
+							<label for="questions_id" class="form-label">Seleccionar Pregunta</label>
+							<select class="form-control" name="questions_ids" id="questions_id" required> 
+								{% for questions_item in questions %}
+									<option value="{{ questions_item.id }}"> [{{ questions_item.category.name }}] - {{ questions_item.text }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Crear Respuesta</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+    <form method="POST" action="{{ path('answer_edit') }}">
+		<div class="modal fade" id="respuestaEdit" tabindex="-1" aria-labelledby="respuestaEditLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="respuestaEditLabel">Editar Respuesta</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+					</div>
+					<div class="modal-body" style="text-align-last: center;">
+						<div class="mb-3">
+							<label for="nombreRespuestaE" class="form-label">Nombre de la respuesta</label>
+							<input type="text" class="form-control" id="nombreRespuestaE" name="nombreRespuestaE" required>
+							<input type="hidden" id="idAnswer" name="idAnswer" value="">
+                        </div>
+						<div class="mb-3">
+							<label for="isCorrectE" class="form-label">¿Es Correcta?</label>
+							<input type="number" class="form-control" id="isCorrectE" placeholder="0- No, 1- Si" name="isCorrectE" max="1" required>
+                        </div>
+						<div class="mb-3">
+							<label for="questions_id" class="form-label">Seleccionar Pregunta</label>
+							<select class="form-control" name="questions_idsE" id="questions_idE" required> 
+								{% for questions_item in questions %}
+									<option value="{{ questions_item.id }}"> [{{ questions_item.category.name }}] - {{ questions_item.text }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary" name="btnGuardar" id="btnGuardar">Editar Respuesta</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+{% endblock %}
+
+{% block javascript %}
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+            var editModal = document.getElementById('respuestaEdit'); 
+            
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    if (!button) return;
+                    var id = button.getAttribute('data-id');
+                    var text = button.getAttribute('data-text');
+                    var isCorrect = button.getAttribute('data-is-correct');
+                    var questionId = button.getAttribute('data-question-id');
+                    var inputId = document.getElementById('idAnswer');
+                    var inputText = document.getElementById('nombreRespuestaE');
+                    var inputIsCorrect = document.getElementById('isCorrectE');
+                    var selectQuestion = document.getElementById('questions_idE');
+                    if (inputId) inputId.value = id || '';
+                    if (inputText) inputText.value = text || '';
+                    if (inputIsCorrect) inputIsCorrect.value = isCorrect || 0;
+
+                    if (selectQuestion && questionId) {
+                        for (var i = 0; i < selectQuestion.options.length; i++) {
+                            var option = selectQuestion.options[i];
+                            
+                            if (option.value == questionId) {
+                                option.selected = true; 
+                            } else {
+                                option.selected = false; 
+                            }
+                        }
+                    }
+                });
+            }
+		});
+        function eliminarRespuesta(url) {
+            if (!confirm('¿Estás seguro de eliminar esta respuesta?')) {
+                return;
+            }
+            fetch(url, { method: 'DELETE' })
+                .then(response => {
+                    if (response.status === 409) {
+                        return response.json().then(data => {
+                            alert('Error: ' + (data.error || 'Problema de relación de datos.'));
+                        });
+                    } else if (response.ok) {
+                        alert('Respuesta eliminada correctamente');
+                        location.reload();
+                    } else {
+                        alert('Error inesperado al eliminar la Respuesta.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error de conexión con el servidor (fetch failed).');
+                });
+        }
+
+	</script>
+{% endblock %}

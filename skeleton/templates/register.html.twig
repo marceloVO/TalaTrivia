@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Registrarse - TalaTrivia{% endblock %}
+
+{% block stylesheet %}
+<style>
+  
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="register-card">
+  <h1>Crear cuenta</h1>
+
+  {% if error %}
+    <div class="p-2 mb-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded">
+      {{ error }}
+    </div>
+  {% endif %}
+<div class="max-w-md container mx-auto bg-white p-6 rounded-lg shadow" style="width: 30%; height: 300px;">
+  <form method="post" action="{{ path('app_register') }}">
+    <div class="row text-center" style="padding-top: 1rem;">
+        
+        <div class="mb-3 ">
+          <input id="name" name="name" placeholder="Nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <input id="email" name="email" placeholder="Email" class="form-control" type="email" required>
+        </div>
+
+        <div class="mb-4">
+          <input id="password" name="password" placeholder="Contraseña" class="form-control" type="password" required>
+        </div>
+        <div class="mb-3 ">
+          <button type="submit" class="btn-submit btn btn-success">Crear cuenta</button>
+        </div>
+    </div>
+    <div class="text-center mt-4 text-sm text-gray-600">
+      ¿Ya tienes cuenta?
+      <a href="{{ path('app_login') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">Inicia sesión</a>
+    </div>
+  </form>
+</div>
+</div>
+{% endblock %}
