@@ -154,7 +154,6 @@
             const selectedId = saveCurrentAnswer();
             
             if (selectedId === null) {
-                // Reemplazado alert() por console.warn() para evitar errores en el iframe.
                 console.warn('Por favor, selecciona una respuesta antes de continuar.');
                 return; 
             }
@@ -172,8 +171,6 @@
                 updateUI();
             }
         });
-        
-        // Función de envío de respuestas
         document.getElementById('submit-btn').addEventListener('click', async function() {
             const selectedId = saveCurrentAnswer();
             
@@ -184,13 +181,10 @@
             
             this.disabled = true;
             prevBtn.disabled = true;
-            
-            // Formato de las respuestas para el API
             const answersArray = Array.from(selectedAnswers, ([question_id, answer_id]) => ({ question_id, answer_id }));
             document.getElementById('play-form').style.opacity = '0.5';
 
             try {
-                // Implementación de reintento con backoff exponencial
                 const maxRetries = 3;
                 let attempt = 0;
                 let res;
@@ -204,16 +198,13 @@
                         });
 
                         if (res.ok) {
-                            break; // Éxito, salir del bucle
+                            break; 
                         }
-                        
-                        // Si la respuesta no es OK pero no es un error de red, reintentar (excepto 400s)
                         if (res.status >= 400 && res.status < 500) {
                              throw new Error(`Client error: ${res.status}`);
                         }
                         
                     } catch (fetchError) {
-                        // Error de red, o error 5xx, intentar de nuevo
                         if (attempt === maxRetries - 1) throw fetchError;
                         
                         const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
@@ -227,15 +218,11 @@
                 }
 
                 const json = await res.json();
-                
-                // Mostrar puntaje en el modal
-                // ¡Ahora finalScoreSpan está definido en este ámbito!
                 if (finalScoreSpan) {
                     finalScoreSpan.innerText = json.score;
                 }
                 
                 scoreModal.style.display = 'inline';
-                // Animación del modal
                 setTimeout(() => {
                     modalContentArea.classList.remove('scale-95', 'opacity-0');
                     modalContentArea.classList.add('scale-100', 'opacity-100');
@@ -243,12 +230,9 @@
 
             } catch (error) {
                 console.error("Error al enviar respuestas:", error);
-                
-                // Restaurar UI si falla
                 this.disabled = false;
                 prevBtn.disabled = (currentQuestionIndex === 0);
                 document.getElementById('play-form').style.opacity = '1';
-                // Implementar un modal de error aquí en un entorno real.
             }
         });
 
