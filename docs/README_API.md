@@ -5,6 +5,7 @@ Base URL: http://localhost:8080
 - TalaTrivia
 - Marcelo Verdejo Olivares
 ## proyecto creado con docker y php con el framework de symfony
+- en el archivo docker-compose.yml en la parte de volumenes yo redirecciono a mi carpeta donde esta el proyecto ante cualquier inconveniente tocaria cambiar esta url por la propia C:/laragon/www/TalaTrivia:/var/www/html
 ## el proyecto consta de 1 usuario admin para poder crear categorias, preguntas, trivias, respuestas en ese orden 
 ## para poder jugar se necesitaria previamente haber creado estos pasos y tener un usuario normal para recien poder jugar
 ## authController sirve para crear usuarios admins, player, logear y deslogear la cuenta
