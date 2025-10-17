@@ -10,24 +10,24 @@
 
 	{% if trivias is empty %}
 		<div class="alert alert-info">No hay Trivias aún.</div>
-	{% else %}
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Nombre</th>
-					<th>Preguntas asociadas</th>
-					<th>Acciones</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for c in trivias %}
-					<tr>
-						<td>{{ c.id }}</td>
-						<td>{{ c.name }}</td>
-						<td>{{ c.questions|length }}</td>
-						<td>
-							<button type="button" 
+	{% else %}		
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Preguntas asociadas</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in trivias %}
+                    <tr>
+                        <td>{{ c.id }}</td>
+                        <td>{{ c.name }}</td>
+                        <td><span class="badge bg-info text-dark">{{ c.questions|length }}</span></td>
+                        <td>
+                            <button type="button" 
                                     class="btn btn-sm btn-outline-secondary btn-edit" 
                                     data-id="{{ c.id }}" 
                                     data-name="{{ c.name }}"
@@ -35,14 +35,42 @@
                                     data-questions="{{ c.questions|map(q => q.id)|json_encode }}" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#TriviaEdit">
-                                    Editar
-                            </button>
-							
-						</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
+                                Editar
+                            </button>                                
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if total_pages > 1 %}
+            <nav class="d-flex justify-content-center mt-4" aria-label="Navegación de Trivias">
+                <ul class="pagination">
+                    <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ path(path_name, {page: current_page - 1}) }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% set start_page = (current_page - 2) > 0 ? (current_page - 2) : 1 %}
+                    {% set end_page = (current_page + 2) < total_pages ? (current_page + 2) : total_pages %}
+                    
+                    {% for i in start_page..end_page %}
+                        <li class="page-item {% if i == current_page %}active{% endif %}">
+                            <a class="page-link" href="{{ path(path_name, {page: i}) }}">{{ i }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {# Enlace Siguiente #}
+                    <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ path(path_name, {page: current_page + 1}) }}" aria-label="Siguiente">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        {% endif %}
+            
+        
+
 	{% endif %}
 	<form method="POST" action="{{ path('trivia_create') }}">
 		<div class="modal fade" id="Trivia" tabindex="-1" aria-labelledby="TriviaLabel" aria-hidden="true">

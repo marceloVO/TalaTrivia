@@ -23,14 +23,15 @@ Base URL: http://localhost:8080
 ## se deben crear primero en el orden dejado para evitar problemas ya que algunas dependen de otras para funcionar
 - Logear cuenta Admin
 - 1) Crear Categorias
-- 2) Crear Preguntas
-- 3) Crear Trivias
-- 4) Crear Respuestas 
+- 2) Crear Preguntas (Asociadas a una Categoría).
+- 3) Crear Trivias (Asociadas a una Pregunta; solo una debe ser la correcta).
+- 4) Crear Respuestas (Asociadas a un conjunto de Preguntas).
 
 ## tercer paso -> logear cuenta player y jugar alguna trivia creada previamente
 ## una vez creado todo en el home http://localhost:8080 se veran las trivias,
 ##  y si esta logeado con algun usuario se podra participar en dicha trivia
-- elegir trivia y hacer click al boton de jugar
-- se listaran las preguntas relacionadas a las trivias cada pregunta tiene un puntaje el cual al finalizar se sumaran
-- al final de la trivia se guarda el puntaje obtenido, y en el inicio de la pagina mostrara el top 5 jugadores con mayor ranking 
-## en PlayController estan los metodos para comenzar el juego y para enviar los resultados
+- Logear cuenta Player y acceder al Home (http://localhost:8080).
+- En el Home, se listan las trivias disponibles y se muestra el Top 5 jugadores con mayor ranking.
+- Iniciar Juego: Elegir una trivia y hacer click en el botón "Jugar".
+- Desarrollo: Se listan las preguntas, donde cada una tiene un puntaje que se sumará al finalizar.
+- Finalización: El puntaje obtenido se guarda en la base de datos. Los métodos para comenzar el juego (/play/start) y para enviar los resultados (/api/play/Participation/{id}/submit) residen en el PlayController

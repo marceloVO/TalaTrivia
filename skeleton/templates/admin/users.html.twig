@@ -1,0 +1,67 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Admin - Usuarios - TalaTrivia{% endblock %}
+
+{% block content %}
+	<div class="d-flex justify-content-between align-items-center mb-3">
+		<h2>Listado Usuarios Registrados</h2>		
+	</div>
+
+	{% if users is empty %}
+		<div class="alert alert-info">No hay Usuarios aún.</div>
+	{% else %}
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Nombre</th>
+						<th>Email</th>
+						<th>Usuario Tipo</th>
+					</tr>
+				</thead>
+				<tbody>           
+					{% for c in users %}
+						<tr>
+							<td>{{ c.id }}</td>
+							<td>{{ c.name is defined ? c.name : 'N/A' }}</td>
+							<td>{{ c.email }}</td>
+							<td>
+								{% if c.roles[0] == 'ROLE_PLAYER' %}
+									<span class="badge bg-primary text-white">Jugador</span>
+								{% elseif c.roles[0] == 'ROLE_ADMIN' %}
+									<span class="badge bg-danger text-white">Administrador</span>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% if total_pages > 1 %}
+			<nav class="d-flex justify-content-center mt-4" aria-label="Navegación de Usuarios">
+				<ul class="pagination">
+					<li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+						<a class="page-link" href="{{ path(path_name, {page: current_page - 1}) }}" aria-label="Anterior">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					{% set start_page = (current_page - 2) > 0 ? (current_page - 2) : 1 %}
+					{% set end_page = (current_page + 2) < total_pages ? (current_page + 2) : total_pages %}					
+					{% for i in start_page..end_page %}
+						<li class="page-item {% if i == current_page %}active{% endif %}">
+							<a class="page-link" href="{{ path(path_name, {page: i}) }}">{{ i }}</a>
+						</li>
+					{% endfor %}
+					<li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+						<a class="page-link" href="{{ path(path_name, {page: current_page + 1}) }}" aria-label="Siguiente">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		{% endif %}
+	{% endif %}
+{% endblock %}
+
+{% block javascript %}
+	
+{% endblock %}

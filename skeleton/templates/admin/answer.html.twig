@@ -11,47 +11,76 @@
 	{% if answers is empty %}
 		<div class="alert alert-info">No hay Respuestas aún.</div>
 	{% else %}
-		<table class="table table-striped">
-			<thead>
+			
+		<table class="table table-striped table-hover rounded-lg overflow-hidden shadow">
+			<thead class="bg-gray-800 text-white">
 				<tr>
-					<th>ID</th>
-					<th>Pregunta</th>
-					<th>Nombre</th>
-					<th>¿Es Correcta?</th>
-					<th>Acciones</th>
+					<th class="py-3 px-4">ID</th>
+					<th class="py-3 px-4">Pregunta</th>
+					<th class="py-3 px-4">Respuesta</th>
+					<th class="py-3 px-4">¿Es Correcta?</th>
+					<th class="py-3 px-4">Acciones</th>
 				</tr>
 			</thead>
 			<tbody>
 				{% for c in answers %}
 					<tr>
-						<td>{{ c.id }}</td>
-						<td>{{ c.question.text }}</td>
-						<td>{{ c.text }}</td>
-						<td>
-							{% if c.is_correct == 1  %}
-								Si
+						<td class="py-2 px-4">{{ c.id }}</td>
+						<td class="py-2 px-4">{{ c.question.text|length > 50 ? c.question.text|slice(0, 50) ~ '...' : c.question.text }}</td>
+						<td class="py-2 px-4">{{ c.text }}</td>
+						<td class="py-2 px-4">
+							{% if c.is_correct %}
+								<span class="badge bg-success text-white">Sí</span>
 							{% else %}
-								No
+								<span class="badge bg-secondary">No</span>
 							{% endif %}
-						
 						</td>
-						<td>
-							<button type="button" style="width: 70px;"
-									class="btn btn-sm btn-outline-secondary btn-edit" 
+						<td class="py-2 px-4 d-flex gap-2">
+							<button type="button" 
+									class="btn btn-sm btn-outline-primary btn-edit" 
 									data-id="{{ c.id }}" 
 									data-text="{{ c.text }}" 
 									data-is-correct="{{ c.is_correct ? 1 : 0 }}" 
 									data-question-id="{{ c.question.id }}" 
 									data-bs-toggle="modal" 
-									data-bs-target="#respuestaEdit">
-									Editar
+									data-bs-target="#respuestaEdit" 
+									style="width: 70px;">
+								Editar
 							</button>
-							<button onclick="eliminarRespuesta('{{ path('answer_delete', {id: c.id}) }}')" class="btn btn-danger btn-sm" style="width: 70px;">Eliminar</button>
+							<button onclick="eliminarRespuesta('{{ path('answer_delete', {id: c.id}) }}')" 
+									class="btn btn-danger btn-sm" 
+									style="width: 70px;">
+								Eliminar
+							</button>
 						</td>
 					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
+		{% if total_pages > 1 %}
+			<nav class="d-flex justify-content-center mt-4" aria-label="Navegación de Respuestas">
+				<ul class="pagination">
+					<li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+						<a class="page-link" href="{{ path(path_name, {page: current_page - 1}) }}" aria-label="Anterior">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+					{% set start_page = (current_page - 2) > 0 ? (current_page - 2) : 1 %}
+					{% set end_page = (current_page + 2) < total_pages ? (current_page + 2) : total_pages %}
+					
+					{% for i in start_page..end_page %}
+						<li class="page-item {% if i == current_page %}active{% endif %}">
+							<a class="page-link" href="{{ path(path_name, {page: i}) }}">{{ i }}</a>
+						</li>
+					{% endfor %}
+					<li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+						<a class="page-link" href="{{ path(path_name, {page: current_page + 1}) }}" aria-label="Siguiente">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		{% endif %}
 	{% endif %}
 	<form method="POST" action="{{ path('answer_create') }}">
 		<div class="modal fade" id="respuesta" tabindex="-1" aria-labelledby="respuestaLabel" aria-hidden="true">

@@ -15,7 +15,7 @@
 				<tr>
 					<th>ID</th>
 					<th>Pregunta</th>
-					<th>Categoria</th>
+					<th>Categoría</th>
 					<th>Dificultad</th>
 					<th>Puntaje</th>
 					<th>Acciones</th>
@@ -26,35 +26,69 @@
 					<tr>
 						<td>{{ c.id }}</td>
 						<td>{{ c.text }}</td>
-						<td>{{c.category.name}}</td>
+						<td>{{ c.category.name }}</td>
 						<td>
 							{% if c.difficulty == 1 %}
-								Facil
+								<span class="badge bg-success">Fácil</span>
 							{% elseif c.difficulty == 2 %}
-								Normal
+								<span class="badge bg-warning text-dark">Normal</span>
 							{% elseif c.difficulty == 3 %}
-								Dificil
+								<span class="badge bg-danger">Difícil</span>
 							{% endif %}
 						</td>
-						<td>{{c.score}}</td>
+						<td>{{ c.score }}</td>
 						<td>
-							<button type="button" class="btn btn-sm btn-outline-secondary btn-edit" data-id="{{c.id}}"   data-text="{{c.text}}" data-category_id="{{c.category.id}}" data-difficulty="{{c.difficulty}}" data-score="{{c.score}}"  data-bs-toggle="modal" data-bs-target="#preguntasEdit">Editar</button>
-							{#<button onclick="eliminarpreguntas('{{ path('questions_delete', {id: c.id}) }}')" class="btn btn-danger btn-sm">Eliminar</button>#}
+							<button type="button" 
+									class="btn btn-sm btn-outline-secondary btn-edit" 
+									data-id="{{ c.id }}" 
+									data-text="{{ c.text }}" 
+									data-category_id="{{ c.category.id }}" 
+									data-difficulty="{{ c.difficulty }}" 
+									data-score="{{ c.score }}" 
+									data-bs-toggle="modal" 
+									data-bs-target="#preguntasEdit">
+								Editar
+							</button>							
 						</td>
 					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
+		{% if total_pages > 1 %}
+			<nav class="d-flex justify-content-center mt-4" aria-label="Navegación de Preguntas">
+				<ul class="pagination">
+					<li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+						<a class="page-link" href="{{ path(path_name, {page: current_page - 1}) }}" aria-label="Anterior">
+							<span aria-hidden="true">&laquo;</span>
+						</a>
+					</li>
+
+					{% set start_page = (current_page - 2) > 0 ? (current_page - 2) : 1 %}
+					{% set end_page = (current_page + 2) < total_pages ? (current_page + 2) : total_pages %}
+					
+					{% for i in start_page..end_page %}
+						<li class="page-item {% if i == current_page %}active{% endif %}">
+							<a class="page-link" href="{{ path(path_name, {page: i}) }}">{{ i }}</a>
+						</li>
+					{% endfor %}
+					<li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+						<a class="page-link" href="{{ path(path_name, {page: current_page + 1}) }}" aria-label="Siguiente">
+							<span aria-hidden="true">&raquo;</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		{% endif %}
 	{% endif %}
 	<form method="POST" action="{{path('questions_create')}}">
 		<div class="modal fade" id="preguntas" tabindex="-1" aria-labelledby="preguntasLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="preguntasLabel">Crear Preguntas</h5>
+						<h5 class="modal-title" id="preguntasLabel" >Crear Preguntas</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 					</div>
-					<div class="modal-body">
+					<div class="modal-body" style="text-align-last: center;">
 						<div class="mb-3">
 							<label for="pregunta" class="form-label">Pregunta</label>
 							<input type="text" class="form-control" id="pregunta" name="text" required>
@@ -88,8 +122,8 @@
 		<div class="modal fade" id="preguntasEdit" tabindex="-1" aria-labelledby="preguntasEditLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg modal-dialog-centered">
 				<div class="modal-content">
-					<div class="modal-header" style="align-self: center;">
-						<h5 class="modal-title" id="preguntasEditLabel">Editar Preguntas</h5>
+					<div class="modal-header" >
+						<h5 class="modal-title" id="preguntasEditLabel" >Editar Preguntas</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 					</div>
 					<div class="modal-body" style="text-align-last: center;">
