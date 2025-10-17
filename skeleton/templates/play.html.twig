@@ -50,8 +50,8 @@
                     Siguiente <i class="fas fa-arrow-right ml-2"></i>
                 </button>
               </div>
-              <div class="col-lg-6 mb-4 text-center font-medium text-gray-600">
-                <button type="button" id="submit-btn" class="btn btn-success px-6 py-2 text-sm font-medium rounded-lg" style="display: none;">
+              <div class="col-lg-12 mb-4 text-center font-medium text-gray-600" style="text-align: center;">
+                <button type="button" id="submit-btn" class="btn btn-success px-6 py-2 text-sm font-medium rounded-lg" style="display: none; justify-self: center;width: 250px;">
                     Enviar Respuestas <i class="fas fa-paper-plane ml-2"></i>
                 </button>
               </div>
@@ -64,18 +64,23 @@
         </div>
     </div> 
     {# Modal de Puntaje Final #}
-    <div id="score-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300" style="display: none;">
-        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0" id="modal-content-area">
-            <h3 class="text-3xl font-extrabold text-indigo-700 text-center mb-4">¡Trivia Finalizada!</h3>
-            <p class="text-center text-gray-600 mb-6">Tu puntaje es:</p>
-            
+    <div id="score-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300" style="display: none;">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full m-4 transform transition-all duration-300 scale-95 opacity-0" id="modal-content-area">
             <div class="text-center">
-                <span id="final-score" class="text-7xl font-black text-green-600 block mb-6">0</span>
+                <div class="mx-auto w-16 h-16 flex items-center justify-center bg-indigo-100 rounded-full mb-4">
+                    <i class="fas fa-trophy text-3xl text-indigo-600"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-extrabold text-gray-800 text-center mb-2">¡Trivia Finalizada!</h3>
+            <p class="text-center text-gray-500 mb-6">Tu puntaje final es:</p>
+            
+            <div class="text-center p-4 bg-green-50 rounded-xl mb-6 border-2 border-green-200">
+                <span id="final-score" class="text-7xl font-black text-green-700 block transition-all duration-300">0</span>
             </div>
 
-            <button onclick="window.location.reload()" class="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition duration-150">
-                Aceptar
-            </button>
+            <a href="{{path('app_home')}}" class="btn btn-success w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition duration-150 shadow-md">
+                Aceptar y Finalizar
+            </a>
         </div>
     </div>
 {% endblock %}
@@ -84,13 +89,16 @@
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.max-w-xl');
         const participationId = container.dataset.participationId;
-        
         const cards = document.querySelectorAll('.question-card');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const submitBtn = document.getElementById('submit-btn');
         const resultDiv = document.getElementById('result');
         const resultContent = document.getElementById('result-content');
+        const scoreModal = document.getElementById('score-modal');
+        const modalContentArea = document.getElementById('modal-content-area');
+        const finalScoreSpan = document.getElementById('final-score');
+        
         const selectedAnswers = new Map();
         let currentQuestionIndex = 0;
         const totalQuestions = cards.length;
@@ -132,9 +140,11 @@
             prevBtn.disabled = currentQuestionIndex === 0;
 
             if (currentQuestionIndex === totalQuestions - 1) {
+                // Última pregunta: Ocultar Siguiente, Mostrar Enviar
                 nextBtn.style.display = 'none'; 
                 submitBtn.style.display = 'block'; 
             } else {
+                // Pregunta intermedia: Mostrar Siguiente, Ocultar Enviar
                 nextBtn.style.display = 'block'; 
                 submitBtn.style.display = 'none'; 
             }
@@ -144,7 +154,8 @@
             const selectedId = saveCurrentAnswer();
             
             if (selectedId === null) {
-                alert('Por favor, selecciona una respuesta antes de continuar.');
+                // Reemplazado alert() por console.warn() para evitar errores en el iframe.
+                console.warn('Por favor, selecciona una respuesta antes de continuar.');
                 return; 
             }
 
@@ -161,35 +172,84 @@
                 updateUI();
             }
         });
-        //respuesta de api para enviar las respuestas
+        
+        // Función de envío de respuestas
         document.getElementById('submit-btn').addEventListener('click', async function() {
             const selectedId = saveCurrentAnswer();
             
             if (selectedId === null) {
-                alert('Por favor, selecciona una respuesta para la última pregunta antes de enviar.');
+                console.warn('Por favor, selecciona una respuesta para la última pregunta antes de enviar.');
                 return; 
-            }            
+            }
+            
             this.disabled = true;
-
+            prevBtn.disabled = true;
+            
             // Formato de las respuestas para el API
             const answersArray = Array.from(selectedAnswers, ([question_id, answer_id]) => ({ question_id, answer_id }));
             document.getElementById('play-form').style.opacity = '0.5';
 
-            const res = await fetch(`/api/play/Participation/${participationId}/submit`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answers: answersArray })
-            });
+            try {
+                // Implementación de reintento con backoff exponencial
+                const maxRetries = 3;
+                let attempt = 0;
+                let res;
 
-            const json = await res.json();
-            finalScoreSpan.innerText = json.score;
-            scoreModal.style.display = 'flex';
-            setTimeout(() => {
-                modalContentArea.classList.remove('scale-95', 'opacity-0');
-                modalContentArea.classList.add('scale-100', 'opacity-100');
-            }, 10);
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
+                while (attempt < maxRetries) {
+                    try {
+                        res = await fetch(`/api/play/Participation/${participationId}/submit`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ answers: answersArray })
+                        });
+
+                        if (res.ok) {
+                            break; // Éxito, salir del bucle
+                        }
+                        
+                        // Si la respuesta no es OK pero no es un error de red, reintentar (excepto 400s)
+                        if (res.status >= 400 && res.status < 500) {
+                             throw new Error(`Client error: ${res.status}`);
+                        }
+                        
+                    } catch (fetchError) {
+                        // Error de red, o error 5xx, intentar de nuevo
+                        if (attempt === maxRetries - 1) throw fetchError;
+                        
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
+                    attempt++;
+                }
+
+                if (!res || !res.ok) {
+                    throw new Error(`Failed to submit answers after ${maxRetries} attempts.`);
+                }
+
+                const json = await res.json();
+                
+                // Mostrar puntaje en el modal
+                // ¡Ahora finalScoreSpan está definido en este ámbito!
+                if (finalScoreSpan) {
+                    finalScoreSpan.innerText = json.score;
+                }
+                
+                scoreModal.style.display = 'inline';
+                // Animación del modal
+                setTimeout(() => {
+                    modalContentArea.classList.remove('scale-95', 'opacity-0');
+                    modalContentArea.classList.add('scale-100', 'opacity-100');
+                }, 10);
+
+            } catch (error) {
+                console.error("Error al enviar respuestas:", error);
+                
+                // Restaurar UI si falla
+                this.disabled = false;
+                prevBtn.disabled = (currentQuestionIndex === 0);
+                document.getElementById('play-form').style.opacity = '1';
+                // Implementar un modal de error aquí en un entorno real.
+            }
         });
 
         // Inicializa la interfaz al cargar la página
